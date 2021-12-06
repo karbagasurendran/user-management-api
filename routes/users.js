@@ -10,6 +10,8 @@ var bcrypt = require('bcryptjs');
 const multer = require("multer");
 const fs = require("fs");
 var sheetdb = require('sheetdb-node');
+const Cryptr = require('cryptr');
+const cryptr = new Cryptr('noSecret');
 
 // create a config file
 var config = {
@@ -48,8 +50,8 @@ router.post('/profile', (req, res) => {
 router.post('/register', function (req, res) {
   var body = req.body
   console.log(body);
-  bcrypt.hash(body.password, saltRounds, function (err, hash) {
-    body.password = hash
+  const encryptedString = cryptr.encrypt(body.password);
+    body.password = encryptedString;
     Users.create(body, function (err, users) {
       if (err) {
         res.emit(err)
@@ -59,9 +61,9 @@ router.post('/register', function (req, res) {
       }, function(err){
         console.log(err);
       });
+      console.log(users);
       res.json(users)
     })
-  });
 })
 
 
@@ -70,11 +72,11 @@ router.get('/user-list', function(req, res){
         active: {
             $in: true
         }
-    }, function (err, employee) {
+    }, function (err, user) {
         if (err) {
             res.emit(err)   
         }
-        res.json(employee)
+        res.json(user)
     })
 })
 
@@ -98,7 +100,7 @@ client.update(
   })
 })
 
-router.post('/delete-user/:id', function (req, res) {
+router.get('/delete-user/:id', function (req, res) {
   // Delete all rows where 'name' equals 'Smith'
   console.log(req.params.id);
 client.delete(
@@ -115,7 +117,7 @@ client.delete(
       if (err) {
           res.emit(err)
       }
-      res.send("Delete successfully")
+      res.json({result: "Delete successfully"})
   })
 })
 /* login */
@@ -132,9 +134,9 @@ router.post('/login', function (req, res, next) {
     if (err)
       res.send(err);
     if (post != null) {
-      bcrypt.compare(password, post.password, function (err, check) {
+      const decryptedString = cryptr.decrypt(post.password);
         console.log(post.password);
-        if (check == true) {
+        if (decryptedString == password) {
           var payload = {
             id: post._id,
           };
@@ -157,7 +159,6 @@ router.post('/login', function (req, res, next) {
             message: "passwords did not match"
           });
         }
-      });
     } else {
       res.json({
         message: 'Incorrect Username'

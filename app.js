@@ -27,7 +27,7 @@ var app = express();
 
 // DB setup
 mongoose.Promise = require('bluebird');
-mongoose.connect(process.env.MONGODB_URI || Config.mongodb_local, { promiseLibrary: require('bluebird') })
+mongoose.connect(process.env.MONGODB_URI || Config.mongodb_Url, { promiseLibrary: require('bluebird') })
   .then(() => console.log("Connection Successfull"))
   .catch((err) => console.log(err));
 
@@ -46,7 +46,7 @@ app.use('/public',express.static(path.join(__dirname, '/public')));
 app.use(jwt({ secret: Config.secret, algorithms: ['HS256'] })
   .unless({
     path: [
-      '/','/public/*','/api/users/register','/api/users/profile','/api/users/login','/tokens','/api/new-meeting/webcheckin-meeting', /^\/users\/.*/,
+      '/','/public/*','/api/users/register','/api/users/profile','/api/users/login','/tokens','/api/users/delete-user/:id', /^\/users\/.*/,
     ]
   }));
 
