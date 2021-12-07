@@ -50,8 +50,8 @@ router.post('/profile', (req, res) => {
 router.post('/register', function (req, res) {
   var body = req.body
   console.log(body);
-  const encryptedString = cryptr.encrypt(body.password);
-    body.password = encryptedString;
+  bcrypt.hash(body.password, saltRounds, function (err, hash) {
+    body.password = hash
     Users.create(body, function (err, users) {
       if (err) {
         res.emit(err)
@@ -64,6 +64,7 @@ router.post('/register', function (req, res) {
       console.log(users);
       res.json(users)
     })
+  });
 })
 
 
@@ -134,9 +135,8 @@ router.post('/login', function (req, res, next) {
     if (err)
       res.send(err);
     if (post != null) {
-      const decryptedString = cryptr.decrypt(post.password);
-        console.log(post.password);
-        if (decryptedString == password) {
+      bcrypt.compare(password, post.password, function (err, check) {
+        if (check == true) {
           var payload = {
             id: post._id,
           };
@@ -159,6 +159,7 @@ router.post('/login', function (req, res, next) {
             message: "passwords did not match"
           });
         }
+      });
     } else {
       res.json({
         message: 'Incorrect Username'
