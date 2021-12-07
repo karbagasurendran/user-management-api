@@ -26,8 +26,9 @@ var allowCrossDomain = function (req, res, next) {
 var app = express();
 
 // DB setup
-mongoose.Promise = require('bluebird');
-mongoose.connect(process.env.MONGODB_URI || Config.mongodb_Url, { promiseLibrary: require('bluebird') })
+mongoose.Promise = global.Promise;
+mongoose.connect(process.env.MONGODB_URI || Config.mongodb_Url, { useNewUrlParser: true,
+  useUnifiedTopology: true})
   .then(() => console.log("Connection Successfull"))
   .catch((err) => console.log(err));
 
